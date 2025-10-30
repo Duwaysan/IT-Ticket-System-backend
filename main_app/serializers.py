@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from .models import Profile, Ticket
  
 
 class UserSerializer(serializers.ModelSerializer):
@@ -17,3 +18,15 @@ class UserSerializer(serializers.ModelSerializer):
         )
       
         return user
+    
+class ProfileSerializer(serializers.ModelSerializer):
+    # user = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = Profile
+        fields = ('id', 'nickname', 'user', "created_at", 'is_manager')
+
+class TicketSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ticket
+        fields = '__all__'
