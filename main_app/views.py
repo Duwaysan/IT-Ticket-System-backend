@@ -1,6 +1,6 @@
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from .serializers import UserSerializer, ProfileSerializer, TicketSerializer
@@ -65,8 +65,30 @@ class LoginView(APIView):
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
     except Exception as err:
         return Response({'error': str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+class VerifyUserView(APIView):
+  permission_classes = [permissions.IsAuthenticated]
+
+  def get(self, request):
+    try:
+      user = User.objects.get(username=request.user.username)
+      try:
+        refresh = RefreshToken.for_user(user)
+        data = {
+        	    'refresh': str(refresh),
+        	    'access': str(refresh.access_token),
+        	    'user': UserSerializer(user).data,
+                'profile': ProfileSerializer(user.profile).data
+            }
+        return Response(data, status=status.HTTP_200_OK)
+      except Exception as token_error:
+        return Response({"detail": "Failed to generate token.", "error": str(token_error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except Exception as err:
+      return Response({"detail": "Unexpected error occurred.", "error": str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class TicketIndex(generics.ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
     def get(self, request,profile_id):

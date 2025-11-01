@@ -27,6 +27,15 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ('id', 'nickname', 'user', "created_at", 'is_manager')
 
 class TicketSerializer(serializers.ModelSerializer):
+    created_by_name = serializers.SerializerMethodField()
+    assigned_to_name = serializers.SerializerMethodField()
+    
     class Meta:
         model = Ticket
         fields = '__all__'
+
+    def get_created_by_name(self, obj):
+        return obj.created_by.nickname if obj.created_by else None
+
+    def get_assigned_to_name(self, obj):
+        return obj.assigned_to.nickname if obj.assigned_to else None
