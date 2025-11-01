@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 class Profile(models.Model):
     nickname = models.CharField(max_length=50)
     is_manager = models.BooleanField(default=False)
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile' )
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -14,7 +14,7 @@ class Profile(models.Model):
     
 class Ticket(models.Model):
     title = models.CharField(max_length=100)
-    description = models.TextField()
+    content = models.TextField()
     is_resolved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

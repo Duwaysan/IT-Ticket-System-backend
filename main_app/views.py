@@ -101,3 +101,15 @@ class TicketIndex(generics.ListCreateAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as err:
             return Response({'error': str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class TicketDetail(APIView):
+  serializer_class = TicketSerializer
+  lookup_field = 'id'
+
+  def get(self, request, ticket_id):
+    try:
+        queryset = Ticket.objects.get(id=ticket_id)
+        ticket = TicketSerializer(queryset)
+        return Response(ticket.data, status=status.HTTP_200_OK)
+    except Exception as err:
+        return Response({'error': str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
