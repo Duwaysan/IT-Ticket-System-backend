@@ -1,12 +1,14 @@
 from django.urls import path
-from .views import CreateUserView, LoginView, VerifyUserView
+from .views import CreateUserView, LoginView, VerifyUserView, fetchManagers
 from .views import TicketIndex, TicketDetail
 
 urlpatterns = [
     path('users/signup/', CreateUserView.as_view(), name='signup'),
     path('users/login/', LoginView.as_view(), name='login'),
     path('users/token/refresh/', VerifyUserView.as_view(), name='token_refresh'),
+    path('users/managers/', fetchManagers.as_view(), name='managers'),
     path('profiles/<int:profile_id>/tickets/', TicketIndex.as_view(), name='ticket-index'),
+    # path('profiles/<int:profile_id>/tickets/', TicketIndex.as_view(), name='ticket-create'),
     path('tickets/<int:ticket_id>/', TicketDetail.as_view(), name='ticket-detail'),
 
 ]

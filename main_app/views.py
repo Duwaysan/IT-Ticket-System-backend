@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from .serializers import UserSerializer, ProfileSerializer, TicketSerializer
 from rest_framework.views import APIView
-from .models import Ticket
+from .models import Ticket, Profile
 
 # User Registration
 class CreateUserView(generics.CreateAPIView):
@@ -86,21 +86,37 @@ class VerifyUserView(APIView):
     except Exception as err:
       return Response({"detail": "Unexpected error occurred.", "error": str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class fetchManagers(APIView):
 
+    def get(self, request):
+        try:
+            queryset = Profile.objects.filter(is_manager=True)
+            managers = ProfileSerializer(queryset, many=True)
+            return Response(managers.data, status=status.HTTP_200_OK)
+        except Exception as err:
+            return Response({'error': str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 class TicketIndex(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
+
     def get(self, request,profile_id):
         try: 
-            #filter tickets if profile ismanager get assigned_to else get created_by
-            # print(request.user.profile.is_manager, "line 90")
-            # print(profile_id, "line 91")
             queryset = Ticket.objects.filter(assigned_to__id=profile_id) if request.user.profile.is_manager else Ticket.objects.filter(created_by__id=profile_id)
             serializer = TicketSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as err:
             return Response({'error': str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+    def post(self, request, profile_id):
+
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+          serializer.save()
+          return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class TicketDetail(APIView):
   serializer_class = TicketSerializer
