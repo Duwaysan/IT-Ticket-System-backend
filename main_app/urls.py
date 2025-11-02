@@ -8,7 +8,6 @@ urlpatterns = [
     path('users/token/refresh/', VerifyUserView.as_view(), name='token_refresh'),
     path('users/managers/', fetchManagers.as_view(), name='managers'),
     path('profiles/<int:profile_id>/tickets/', TicketIndex.as_view(), name='ticket-index'),
-    # path('profiles/<int:profile_id>/tickets/', TicketIndex.as_view(), name='ticket-create'),
     path('tickets/<int:ticket_id>/', TicketDetail.as_view(), name='ticket-detail'),
 
 ]

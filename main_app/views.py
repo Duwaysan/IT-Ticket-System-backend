@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate
 from .serializers import UserSerializer, ProfileSerializer, TicketSerializer
 from rest_framework.views import APIView
 from .models import Ticket, Profile
+from django.shortcuts import get_object_or_404
 
 # User Registration
 class CreateUserView(generics.CreateAPIView):
@@ -119,13 +120,36 @@ class TicketIndex(generics.ListCreateAPIView):
         return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class TicketDetail(APIView):
-  serializer_class = TicketSerializer
-  lookup_field = 'id'
+    serializer_class = TicketSerializer
+    lookup_field = 'id'
 
-  def get(self, request, ticket_id):
-    try:
-        queryset = Ticket.objects.get(id=ticket_id)
-        ticket = TicketSerializer(queryset)
-        return Response(ticket.data, status=status.HTTP_200_OK)
-    except Exception as err:
-        return Response({'error': str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    def get(self, request, ticket_id):
+          permission_classes = [permissions.IsAuthenticated]
+          try:
+              queryset = get_object_or_404(Ticket, id=ticket_id)
+              ticket = self.serializer_class(queryset)
+              print("retrieved ticket",ticket.data)
+              return Response(ticket.data, status=status.HTTP_200_OK)
+          except Exception as err:
+              return Response({'error': str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def put(self, request, ticket_id):
+        permission_classes = [permissions.IsAuthenticated]
+        try:
+            ticket = get_object_or_404(Ticket, id=ticket_id)
+            serializer = self.serializer_class(ticket, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as err:
+            return Response({'error': str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    def delete(self, request, ticket_id):
+        permission_classes = [permissions.IsAuthenticated]
+        try:
+            ticket = get_object_or_404(Ticket, id=ticket_id)
+            ticket.delete()
+            return Response({'success': True}, status=status.HTTP_200_OK)
+        except Exception as err:
+            return Response({'error': str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
