@@ -26,3 +26,13 @@ class Ticket(models.Model):
     
     class Meta:
         ordering = ['-created_at']
+
+class Message(models.Model):
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE )
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']

@@ -3,9 +3,9 @@ from rest_framework.response import Response
 from rest_framework import generics, status, permissions
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-from .serializers import UserSerializer, ProfileSerializer, TicketSerializer
+from .serializers import UserSerializer, ProfileSerializer, TicketSerializer, MessageSerializer
 from rest_framework.views import APIView
-from .models import Ticket, Profile
+from .models import Ticket, Profile, Message
 from django.shortcuts import get_object_or_404
 
 # User Registration
@@ -16,7 +16,6 @@ class CreateUserView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         try:
-            print(request.data, "line 17")
             user_serializer = UserSerializer(data=request.data)
             user_serializer.is_valid(raise_exception=True)
             user = user_serializer.save()
@@ -41,7 +40,6 @@ class CreateUserView(generics.CreateAPIView):
             return Response(data, status=status.HTTP_201_CREATED)
         except Exception as err:
             print("line 41", err)
-            print(user_serializer.errors, profile_serializer.errors, "line 42")
             return Response({'error': str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -128,7 +126,6 @@ class TicketDetail(APIView):
           try:
               queryset = get_object_or_404(Ticket, id=ticket_id)
               ticket = self.serializer_class(queryset)
-              print("retrieved ticket",ticket.data)
               return Response(ticket.data, status=status.HTTP_200_OK)
           except Exception as err:
               return Response({'error': str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -153,3 +150,15 @@ class TicketDetail(APIView):
             return Response({'success': True}, status=status.HTTP_200_OK)
         except Exception as err:
             return Response({'error': str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+class MessagesIndex(APIView):
+    serializer_class = MessageSerializer
+
+    def get(self, request, ticket_id):
+       try:
+         queryset = Message.objects.filter(ticket=ticket_id)
+         return Response(self.serializer_class(queryset, many=True).data, status=status.HTTP_200_OK)
+       except Exception as err:
+         return Response({'error': str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

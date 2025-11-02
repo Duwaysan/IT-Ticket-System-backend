@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import Profile, Ticket
+from .models import Profile, Ticket, Message
 # Register your models here.
 admin.site.register(Profile)
 admin.site.register(Ticket)
+admin.site.register(Message)
+

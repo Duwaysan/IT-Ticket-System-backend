@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Profile, Ticket
+from .models import Profile, Ticket,Message
  
 
 class UserSerializer(serializers.ModelSerializer):
@@ -20,7 +20,6 @@ class UserSerializer(serializers.ModelSerializer):
         return user
     
 class ProfileSerializer(serializers.ModelSerializer):
-    # user = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Profile
@@ -39,3 +38,13 @@ class TicketSerializer(serializers.ModelSerializer):
 
     def get_assigned_to_name(self, obj):
         return obj.assigned_to.nickname if obj.assigned_to else None
+    
+class MessageSerializer(serializers.ModelSerializer):
+    sender = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Message
+        fields = '__all__'
+
+    def get_sender(self,obj):
+        return ProfileSerializer(obj.profile).data if obj.profile else None
