@@ -9,6 +9,7 @@ urlpatterns = [
     path('users/managers/', fetchManagers.as_view(), name='managers'),
     path('profiles/<int:profile_id>/tickets/', TicketIndex.as_view(), name='ticket-index'),
     path('tickets/<int:ticket_id>/', TicketDetail.as_view(), name='ticket-detail'),
-    path('tickets/<int:ticket_id>/messages/', MessagesIndex.as_view(), name='message-create'),
+    path('tickets/<int:ticket_id>/messages/', MessagesIndex.as_view(), name='message-index'),
+    path('tickets/<int:ticket_id>/messages/<int:message_id>/', MessagesIndex.as_view(), name='message-index'),
 
 ]

@@ -9,6 +9,10 @@ psycopg2-binary = "*"
 djangorestframework = "*"
 djangorestframework-simplejwt = "*"
 django-cors-headers = "*"
+openai = "*"
+python-dotenv = "*"
+google = "*"
+google-genai = "*"
 
 [dev-packages]
 

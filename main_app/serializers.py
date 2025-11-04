@@ -26,18 +26,18 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ('id', 'nickname', 'user', "created_at", 'is_manager')
 
 class TicketSerializer(serializers.ModelSerializer):
-    created_by_name = serializers.SerializerMethodField()
-    assigned_to_name = serializers.SerializerMethodField()
+    created_by = serializers.SerializerMethodField()
+    assigned_to = serializers.SerializerMethodField()
     
     class Meta:
         model = Ticket
         fields = '__all__'
 
-    def get_created_by_name(self, obj):
-        return obj.created_by.nickname if obj.created_by else None
+    def get_created_by(self, obj):
+        return ProfileSerializer(obj.created_by).data if obj.created_by else None
 
-    def get_assigned_to_name(self, obj):
-        return obj.assigned_to.nickname if obj.assigned_to else None
+    def get_assigned_to(self, obj):
+        return ProfileSerializer(obj.assigned_to).data if obj.assigned_to else None
     
 class MessageSerializer(serializers.ModelSerializer):
     sender = serializers.SerializerMethodField()

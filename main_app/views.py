@@ -7,7 +7,21 @@ from .serializers import UserSerializer, ProfileSerializer, TicketSerializer, Me
 from rest_framework.views import APIView
 from .models import Ticket, Profile, Message
 from django.shortcuts import get_object_or_404
+import os
+from openai import OpenAI
+from google import genai
 
+client = genai.Client()
+
+def AI_response():
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents="Explain how AI works in a few words",
+    )
+    
+    print(response.text)
+    # print(response," Testing openAI")
+   
 # User Registration
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -102,6 +116,9 @@ class TicketIndex(generics.ListCreateAPIView):
 
     def get(self, request,profile_id):
         try: 
+            # print("printing line 122")
+            # AI_response()
+            # print("printing line 124")
             queryset = Ticket.objects.filter(assigned_to__id=profile_id) if request.user.profile.is_manager else Ticket.objects.filter(created_by__id=profile_id)
             serializer = TicketSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -162,3 +179,32 @@ class MessagesIndex(APIView):
          return Response(self.serializer_class(queryset, many=True).data, status=status.HTTP_200_OK)
        except Exception as err:
          return Response({'error': str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    def post(self, request, ticket_id):
+
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+          serializer.save()
+          queryset = Message.objects.filter(ticket=ticket_id)
+          messages = MessageSerializer(queryset, many=True)
+          return Response(messages.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def delete(self, request, ticket_id, message_id):
+        try:
+            message = get_object_or_404(Message, ticket=ticket_id, id=message_id)
+            message.delete()
+            return Response({'success': True}, status=status.HTTP_200_OK)
+        except Exception as err:
+            return Response({'error': str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def put(self, request, ticket_id, message_id):
+        try:
+          message = get_object_or_404(Message, ticket=ticket_id, id=message_id)
+          serializer = self.serializer_class(message, data=request.data)
+          if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+          print(serializer.errors)
+          return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as err:
+            return Response({'error': str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
