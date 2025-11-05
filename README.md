@@ -84,7 +84,15 @@ pip install -r requirements.txt
 python manage.py migrate
 python manage.py runserver
 ```
-
+## Docker
+### Run Docker
+```bash
+docker compose up --build -d
+```
+### Stop Docker
+```bash
+docker compose down
+```
 ## IceBox (Future Enhancements)
 
 - AI ticket suggestions to propose solutions automatically
