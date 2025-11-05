@@ -8,7 +8,6 @@ from rest_framework.views import APIView
 from .models import Ticket, Profile, Message
 from django.shortcuts import get_object_or_404
 import os
-from openai import OpenAI
 from google import genai
 
 client = genai.Client()
@@ -19,8 +18,6 @@ def AI_response():
         contents="Explain how AI works in a few words",
     )
     
-    print(response.text)
-    # print(response," Testing openAI")
    
 # User Registration
 class CreateUserView(generics.CreateAPIView):
