@@ -9,17 +9,63 @@ from .models import Ticket, Profile, Message
 from django.shortcuts import get_object_or_404
 import os
 from google import genai
+from google.genai.types import GenerateContentConfig
+from django.utils import timezone
+
 
 client = genai.Client()
 
-def AI_response():
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents="Explain how AI works in a few words",
-    )
+def generate_ai_response(title: str, content: str) -> str:
+    prompt = f"""
+You are an IT helpdesk assistant.
+Provide a brief, clear response summarizing the issue and suggesting steps.
+Keep it short and practical.
+
+Ticket Title: {title}
+Ticket Description: {content}
+"""
+
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+            config=GenerateContentConfig(
+                system_instruction=[
+                    "You're an IT support helper.",
+                    "Your mission is to respond to support tickets with brief, helpful, practical guidance.",
+                    "Keep responses concise (3–6 bullet points max).",
+                    "If ticket is not a question or something needs an reply with 'You ticket doesn't need AI"
+                ]
+            ),
+        )
+
+        text = (getattr(response, "text", "") or "").strip()
+        return text or "No AI response available."
+
+    except Exception as e:
+        return f"AI error: {e}"
+
+
+class TicketAIResponse(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, ticket_id):
+        ticket = get_object_or_404(Ticket, id=ticket_id)
+
+        if ticket.ai_response:
+            return Response({"ai_response": ticket.ai_response}, status=status.HTTP_200_OK)
+
+        text = generate_ai_response(ticket.title, ticket.content)
+
+        try:
+            ticket.ai_response = text
+            ticket.ai_updated_at = timezone.now()
+            ticket.save(update_fields=["ai_response", "ai_updated_at"])
+        except Exception as err:
+            print("AI save error:", err)
+        return Response({"ai_response": text}, status=status.HTTP_200_OK)
     
-   
-# User Registration
+
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     UserSerializer = UserSerializer

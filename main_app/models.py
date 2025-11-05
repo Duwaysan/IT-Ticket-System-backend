@@ -20,6 +20,8 @@ class Ticket(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='tickets_created')
     assigned_to = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='tickets_assigned')
+    ai_response = models.TextField(blank=True, default="")
+    ai_updated_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"Ticket: {self.title} (Resolved: {self.is_resolved})"
