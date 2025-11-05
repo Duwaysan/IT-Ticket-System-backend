@@ -53,7 +53,6 @@ class CreateUserView(generics.CreateAPIView):
             }
             return Response(data, status=status.HTTP_201_CREATED)
         except Exception as err:
-            print("line 41", err)
             return Response({'error': str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -118,7 +117,7 @@ class TicketIndex(generics.ListCreateAPIView):
         try: 
             # print("printing line 122")
             # AI_response()
-            # print("printing line 124")
+            # print("printing line 124"))
             queryset = Ticket.objects.filter(assigned_to__id=profile_id) if request.user.profile.is_manager else Ticket.objects.filter(created_by__id=profile_id)
             serializer = TicketSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -127,14 +126,20 @@ class TicketIndex(generics.ListCreateAPIView):
         
 
     def post(self, request, profile_id):
-
-        serializer = self.serializer_class(data=request.data)
+        
+        #print('request:', request.data)
+        data = request.data.copy()
+        data["created_by"] = request.data.get('created_by')
+        data["assigned_to"] = request.data.get('assigned_to')
+        serializer = self.serializer_class(data=data)
         if serializer.is_valid():
           serializer.save()
           return Response(serializer.data, status=status.HTTP_200_OK)
+        print('line 134', serializer.errors)
         return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class TicketDetail(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     serializer_class = TicketSerializer
     lookup_field = 'id'
 
@@ -171,6 +176,7 @@ class TicketDetail(APIView):
 
 
 class MessagesIndex(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     serializer_class = MessageSerializer
 
     def get(self, request, ticket_id):
@@ -204,7 +210,6 @@ class MessagesIndex(APIView):
           if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-          print(serializer.errors)
           return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as err:
             return Response({'error': str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
