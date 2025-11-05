@@ -1,0 +1,7 @@
+django
+psycopg2-binary
+djangorestframework
+django-cors-headers
+djangorestframework-simplejwt
+python-dotenv
+google-genai
